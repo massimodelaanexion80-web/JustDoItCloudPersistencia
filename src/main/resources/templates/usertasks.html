@@ -1,123 +1,269 @@
+
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
-    <title>JustDoIt! - Tareas de Usuario</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link rel="stylesheet" th:href="@{/css/styles.css}" />
+    <title>JustDoIt! - Mis tareas</title>
+
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
+
 <body>
+
 <div class="container">
 
-    <!-- Left column -->
+    <!-- MENÚ LATERAL -->
     <aside class="sidebar">
+
         <div class="logo">
-            <a th:href="@{/}"><img th:src="@{/images/JustDoIt.png}" alt="JustDoIt Logo" width="200" height="200"></a>
+            <a th:href="@{/}">
+                <img th:src="@{/images/JustDoIt.png}"
+                     alt="JustDoIt!"
+                     width="200"
+                     height="200">
+            </a>
         </div>
 
         <nav class="navigation">
             <h3>Opciones</h3>
+
             <ul>
                 <li>
                     <a th:href="@{/user/home}">Inicio</a>
                 </li>
+
                 <li>
-                    <strong>Tareas de usuario actual</strong>
+                    <strong>Mis tareas</strong>
                 </li>
+
                 <li>
                     <a th:href="@{/logout}">Cerrar sesión</a>
                 </li>
             </ul>
         </nav>
+
     </aside>
 
-    <!-- Right column -->
+    <!-- CONTENIDO PRINCIPAL -->
     <main class="content">
-        <h1>Tareas de usuario</h1>
 
-        <!-- User info -->
+        <h1>Mis tareas</h1>
+
+        <!-- INFORMACIÓN DEL USUARIO -->
         <div class="user-card">
-            <div class="user-avatar" th:text="${user.name != null} ? ${user.name.substring(0,1)} : 'U'">U</div>
+
+            <div class="user-avatar">
+                <span th:text="${user.name}">Usuario</span>
+            </div>
+
             <div class="user-info">
-                <div><strong th:text="${user.name}">Nombre Usuario</strong> <span style="color:#666">(<span th:text="${user.username}">username</span>)</span></div>
-                <div>Email: <span th:text="${user.email}">email@example.com</span></div>
-                <div>Tipo: <span th:text="${user.type}">REGULAR</span></div>
+
+                <strong th:text="${user.name}">
+                    Nombre del usuario
+                </strong>
+
+                <div>
+                    Usuario:
+                    <span th:text="${user.username}">
+                        username
+                    </span>
+                </div>
+
+                <div>
+                    Correo:
+                    <span th:text="${user.email}">
+                        correo
+                    </span>
+                </div>
+
+                <div>
+                    Tipo:
+                    <span th:text="${user.type}">
+                        REGULAR
+                    </span>
+                </div>
+
             </div>
         </div>
 
-        <!-- Tasks grouped by status -->
+        <!-- GRUPOS DE TAREAS -->
         <div class="tasks-grid">
 
-            <!-- PENDING -->
+            <!-- TAREAS PENDIENTES -->
             <section class="tasks-group">
+
                 <h3>Pendientes</h3>
-                <div th:if="${#lists.isEmpty(user.tasks.?[status.name() == 'PENDING'])}">
-                    No hay tareas pendientes.
-                </div>
-                <form  method="POST" class="new-task-form" th:object="${newTask}">
-                    <!-- Solo capturamos la descripción -->
-                    <label for="description">Nueva tarea:</label>
-                    <input th:field="*{description}" type="text" placeholder="Describe la tarea..."
-                    />
+
+                <!-- FORMULARIO PARA CREAR TAREAS -->
+                <form th:action="@{/user/tasks}"
+                      th:object="${newTask}"
+                      method="post"
+                      class="new-task-form">
+
+                    <label for="description">
+                        Nueva tarea:
+                    </label>
+
+                    <input type="text"
+                           id="description"
+                           th:field="*{description}"
+                           placeholder="Descripción de la tarea"
+                           minlength="3"
+                           required>
+
                     <span class="validationError"
                           th:if="${#fields.hasErrors('description')}"
-                          th:errors="*{description}">Desc error</span>
+                          th:errors="*{description}">
+                    </span>
 
-                    <select th:field="*{deadline}">
-                        <option value="">Fecha límite:</option>
-                        <option value="1WEEK">1 semana</option>
-                        <option value="1MONTH">1 mes</option>
-                    </select>
+                    <label for="deadline">
+                        Fecha límite:
+                    </label>
 
+                    <input type="date"
+                           id="deadline"
+                           th:field="*{deadline}">
 
-                    <!-- Estado fijo a PENDING -->
-                    <input type="hidden" name="status" value="PENDING" />
+                    <input type="hidden"
+                           name="status"
+                           value="PENDING">
 
-                    <button type="submit">Crear tarea</button>
+                    <button type="submit">
+                        Crear tarea
+                    </button>
+
                 </form>
+
+                <div th:if="${#lists.isEmpty(user.tasks.?[status.name() == 'PENDING'])}">
+                    <p>No hay tareas pendientes.</p>
+                </div>
+
+                <!-- LISTADO PENDING -->
                 <div th:each="task : ${user.tasks.?[status.name() == 'PENDING']}">
+
                     <div class="task-item pending">
-                        <div class="task-desc" th:text="${task.description}">Descripción de la tarea...</div>
-                        <div>
-                            <strong>Fecha límite:</strong>
-                            <span th:text="${task.deadline != null} ? ${#temporals.format(task.deadline, 'dd/MMMM/yyyy')} : 'No especificada'">
-                                No especificada
-                            </span>
+
+                        <div class="task-desc"
+                             th:text="${task.description}">
+                            Descripción
                         </div>
+
+                        <p>
+                            <strong>Estado:</strong>
+                            Pendiente
+                        </p>
+
+                        <p>
+                            <strong>Fecha límite:</strong>
+                            <span th:text="${task.deadline != null ? #temporals.format(task.deadline, 'dd/MM/yyyy') : 'No especificada'}">
+                                Sin fecha
+                            </span>
+                        </p>
+
+                        <!-- BOTÓN AVANZAR -->
+                        <form th:action="@{/user/tasks/advance}"
+                              method="post">
+
+                            <input type="hidden"
+                                   name="id"
+                                   th:value="${task.id}">
+
+                            <button type="submit">
+                                Avanzar
+                            </button>
+
+                        </form>
+
                     </div>
+
                 </div>
+
             </section>
 
-            <!-- INPROGRESS -->
+            <!-- TAREAS EN PROGRESO -->
             <section class="tasks-group">
+
                 <h3>En progreso</h3>
+
                 <div th:if="${#lists.isEmpty(user.tasks.?[status.name() == 'INPROGRESS'])}">
-                    No hay tareas en progreso.
+                    <p>No hay tareas en progreso.</p>
                 </div>
+
+                <!-- LISTADO INPROGRESS -->
                 <div th:each="task : ${user.tasks.?[status.name() == 'INPROGRESS']}">
+
                     <div class="task-item inprogress">
-                        <div class="task-desc" th:text="${task.description}">Descripción de la tarea...</div>
+
+                        <div class="task-desc"
+                             th:text="${task.description}">
+                            Descripción
+                        </div>
+
+                        <p>
+                            <strong>Estado:</strong>
+                            En progreso
+                        </p>
+
+                        <!-- BOTÓN AVANZAR -->
+                        <form th:action="@{/user/tasks/advance}"
+                              method="post">
+
+                            <input type="hidden"
+                                   name="id"
+                                   th:value="${task.id}">
+
+                            <button type="submit">
+                                Avanzar
+                            </button>
+
+                        </form>
+
                     </div>
+
                 </div>
+
             </section>
 
-            <!-- DONE -->
+            <!-- TAREAS COMPLETADAS -->
             <section class="tasks-group">
+
                 <h3>Completadas</h3>
+
                 <div th:if="${#lists.isEmpty(user.tasks.?[status.name() == 'DONE'])}">
-                    No hay tareas completadas.
+                    <p>No hay tareas completadas.</p>
                 </div>
+
+                <!-- LISTADO DONE -->
                 <div th:each="task : ${user.tasks.?[status.name() == 'DONE']}">
+
                     <div class="task-item done">
-                        <div class="task-desc" th:text="${task.description}">Descripción de la tarea...</div>
+
+                        <div class="task-desc"
+                             th:text="${task.description}">
+                            Descripción
+                        </div>
+
+                        <p>
+                            <strong>Estado:</strong>
+                            Completada
+                        </p>
+
+                        <!-- SIN BOTÓN AVANZAR -->
+
                     </div>
+
                 </div>
+
             </section>
 
         </div>
 
     </main>
+
 </div>
+
 </body>
 </html>
